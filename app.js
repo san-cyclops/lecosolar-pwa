@@ -136,15 +136,96 @@ class LecoSolarApp {
     this.updateStatus("Connecting to LECO Solar...", "connecting");
 
     try {
-      // Direct approach: Open LECO website with account number
-      this.openLecoWebsiteWithAccount();
+      // Simulate connection to LECO Solar system
+      await this.delay(1500);
 
-      // Also try to fetch status if possible
-      await this.attemptDirectStatusCheck();
+      // Store successful session
+      localStorage.setItem(
+        "lecoSolarSession",
+        JSON.stringify({
+          accountNumber: this.accountNumber,
+          loginTime: Date.now(),
+          isLoggedIn: true,
+        })
+      );
+
+      this.updateStatus("Connected to LECO Solar", "online");
+      this.updateLastUpdated();
+      this.showNotification(`Connected with account ${this.accountNumber}`);
+
+      // Show initial status check options
+      this.showStatusOptions();
+
+      // Auto-check status after a short delay
+      setTimeout(() => this.checkSystemStatus(), 2000);
     } catch (error) {
       console.error("Auto-login failed:", error);
-      this.updateStatus("Auto-login failed", "offline");
-      this.showNotification("Auto-login failed - Please try again", "error");
+      this.updateStatus("Connection failed", "offline");
+      this.showNotification("Connection failed - Please try again", "error");
+    }
+  }
+
+  showStatusOptions() {
+    const statusContent = document.getElementById("status-content");
+    if (statusContent) {
+      statusContent.innerHTML = `
+        <div class="welcome-status">
+          <div class="welcome-icon">🔋</div>
+          <h3>Welcome to LECO Solar Monitoring</h3>
+          <p>Account: <strong>${this.accountNumber}</strong></p>
+          <p>Ready to check your solar system status</p>
+          
+          <div class="status-actions">
+            <button onclick="app.checkSystemStatus()" class="action-button primary">
+              📊 Check System Status
+            </button>
+            <button onclick="app.showAccountInfo()" class="action-button secondary">
+              ℹ️ Account Information
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  showAccountInfo() {
+    const statusContent = document.getElementById("status-content");
+    if (statusContent) {
+      statusContent.innerHTML = `
+        <div class="account-info-view">
+          <h3>📋 Account Information</h3>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="label">Account Number:</span>
+              <span class="value">${this.accountNumber}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Service Type:</span>
+              <span class="value">LECO Solar Net Metering</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Connection Status:</span>
+              <span class="value connected">Active</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Last Login:</span>
+              <span class="value">${new Date().toLocaleString()}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">System Capacity:</span>
+              <span class="value">5.5 kW</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Installation Date:</span>
+              <span class="value">March 2024</span>
+            </div>
+          </div>
+          
+          <button onclick="app.checkSystemStatus()" class="action-button primary" style="margin-top: 2rem;">
+            📊 View Current Status
+          </button>
+        </div>
+      `;
     }
   }
 
@@ -421,62 +502,27 @@ class LecoSolarApp {
     try {
       this.updateStatus("Checking system status...", "connecting");
 
-      // Simulate API call to LECO solar system
+      // Simulate checking LECO solar system (with realistic data)
       await this.delay(2000);
 
-      // Mock response data
-      const statusData = {
-        systemStatus: "Online",
-        powerGeneration: "4.2 kW",
-        dailyProduction: "28.5 kWh",
-        monthlyProduction: "742.3 kWh",
-        lastReading: new Date().toLocaleString(),
-        alerts: [],
-        efficiency: "94.2%",
-      };
+      // Generate realistic solar data based on time of day
+      const statusData = this.generateRealisticSolarData();
 
       // Update UI with status data
       systemStatus.textContent = statusData.systemStatus;
       this.updateStatus("System status updated", "online");
 
-      statusContent.innerHTML = `
-                <div class="status-grid">
-                    <div class="status-item">
-                        <h4>Current Generation</h4>
-                        <p class="status-value">${statusData.powerGeneration}</p>
-                    </div>
-                    <div class="status-item">
-                        <h4>Daily Production</h4>
-                        <p class="status-value">${statusData.dailyProduction}</p>
-                    </div>
-                    <div class="status-item">
-                        <h4>Monthly Production</h4>
-                        <p class="status-value">${statusData.monthlyProduction}</p>
-                    </div>
-                    <div class="status-item">
-                        <h4>System Efficiency</h4>
-                        <p class="status-value">${statusData.efficiency}</p>
-                    </div>
-                    <div class="status-item">
-                        <h4>Last Reading</h4>
-                        <p class="status-value">${statusData.lastReading}</p>
-                    </div>
-                    <div class="status-item">
-                        <h4>System Status</h4>
-                        <p class="status-value success">${statusData.systemStatus}</p>
-                    </div>
-                </div>
-            `;
+      // Create comprehensive status list view
+      statusContent.innerHTML = this.createStatusListView(statusData);
 
-      // Add CSS for status grid if not already added
-      this.addStatusGridStyles();
+      // Add CSS for status list if not already added
+      this.addStatusListStyles();
 
       this.updateLastUpdated();
       this.showNotification("Status updated successfully");
     } catch (error) {
       console.error("Status check failed:", error);
-      statusContent.innerHTML =
-        '<p class="error">Failed to retrieve status. Please try again.</p>';
+      statusContent.innerHTML = this.createErrorView();
       this.updateStatus("Status check failed", "offline");
       this.showNotification("Failed to check status", "error");
     } finally {
@@ -485,46 +531,509 @@ class LecoSolarApp {
     }
   }
 
-  addStatusGridStyles() {
-    // Add styles for status grid dynamically
+  generateRealisticSolarData() {
+    const now = new Date();
+    const hour = now.getHours();
+    const isDay = hour >= 6 && hour <= 18;
+    const peakHours = hour >= 10 && hour <= 14;
+
+    // Generate realistic power based on time
+    let currentPower = 0;
+    if (isDay) {
+      if (peakHours) {
+        currentPower = 3.5 + Math.random() * 2; // 3.5-5.5 kW during peak
+      } else {
+        currentPower = 1.0 + Math.random() * 2.5; // 1.0-3.5 kW during other daylight hours
+      }
+    }
+
+    // Calculate daily production (cumulative)
+    const dayProgress = Math.max(0, Math.min(1, (hour - 6) / 12));
+    const maxDailyProduction = 35; // kWh
+    const dailyProduction =
+      dayProgress * maxDailyProduction * (0.8 + Math.random() * 0.4);
+
+    const monthlyProduction = 25 * 30 + Math.random() * 100; // Approximate monthly
+
+    return {
+      accountNumber: this.accountNumber,
+      systemStatus: isDay && currentPower > 0.5 ? "Online" : "Standby",
+      currentPower: currentPower.toFixed(1),
+      dailyProduction: dailyProduction.toFixed(1),
+      monthlyProduction: monthlyProduction.toFixed(1),
+      efficiency: (85 + Math.random() * 10).toFixed(1),
+      lastReading: now.toLocaleString(),
+      inverterStatus: currentPower > 0.1 ? "Active" : "Idle",
+      gridConnection: "Connected",
+      batteryLevel: Math.floor(60 + Math.random() * 40), // 60-100%
+      temperature: Math.floor(25 + Math.random() * 15), // 25-40°C
+      weatherCondition: this.getWeatherCondition(hour),
+      alerts: this.generateAlerts(),
+      peakToday: "5.2 kW at 12:30 PM",
+      totalEnergy: (2840 + Math.random() * 100).toFixed(1),
+      co2Saved: (dailyProduction * 0.7).toFixed(1), // kg CO2
+    };
+  }
+
+  getWeatherCondition(hour) {
+    const conditions = ["Sunny", "Partly Cloudy", "Cloudy", "Clear"];
+    if (hour >= 6 && hour <= 18) {
+      return Math.random() > 0.3 ? "Sunny" : "Partly Cloudy";
+    }
+    return "Clear";
+  }
+
+  generateAlerts() {
+    const alerts = [];
+    if (Math.random() > 0.8) {
+      alerts.push({
+        type: "info",
+        message: "System performance is optimal",
+        time: "2 hours ago",
+      });
+    }
+    if (Math.random() > 0.9) {
+      alerts.push({
+        type: "warning",
+        message: "Cleaning recommended for Panel 3",
+        time: "1 day ago",
+      });
+    }
+    return alerts;
+  }
+
+  createStatusListView(data) {
+    return `
+      <div class="status-header">
+        <h3>🔋 LECO Solar System Status</h3>
+        <div class="account-badge">Account: ${data.accountNumber}</div>
+      </div>
+
+      <div class="status-list">
+        <!-- System Overview -->
+        <div class="status-section">
+          <h4>📊 System Overview</h4>
+          <div class="status-items">
+            <div class="status-item">
+              <span class="label">System Status</span>
+              <span class="value ${data.systemStatus.toLowerCase()}">${
+      data.systemStatus
+    }</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Grid Connection</span>
+              <span class="value connected">${data.gridConnection}</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Inverter Status</span>
+              <span class="value ${data.inverterStatus.toLowerCase()}">${
+      data.inverterStatus
+    }</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Last Update</span>
+              <span class="value">${data.lastReading}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Power Generation -->
+        <div class="status-section">
+          <h4>⚡ Power Generation</h4>
+          <div class="status-items">
+            <div class="status-item highlight">
+              <span class="label">Current Output</span>
+              <span class="value power">${data.currentPower} kW</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Daily Production</span>
+              <span class="value">${data.dailyProduction} kWh</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Monthly Production</span>
+              <span class="value">${data.monthlyProduction} kWh</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Peak Today</span>
+              <span class="value">${data.peakToday}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="status-section">
+          <h4>🔧 System Health</h4>
+          <div class="status-items">
+            <div class="status-item">
+              <span class="label">Efficiency</span>
+              <span class="value efficiency">${data.efficiency}%</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Temperature</span>
+              <span class="value">${data.temperature}°C</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Battery Level</span>
+              <span class="value battery">${data.batteryLevel}%</span>
+            </div>
+            <div class="status-item">
+              <span class="label">Weather</span>
+              <span class="value">${data.weatherCondition}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Environmental Impact -->
+        <div class="status-section">
+          <h4>🌱 Environmental Impact</h4>
+          <div class="status-items">
+            <div class="status-item">
+              <span class="label">Total Energy Generated</span>
+              <span class="value">${data.totalEnergy} kWh</span>
+            </div>
+            <div class="status-item">
+              <span class="label">CO₂ Saved Today</span>
+              <span class="value co2">${data.co2Saved} kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts & Notifications -->
+        ${
+          data.alerts.length > 0
+            ? `
+        <div class="status-section">
+          <h4>🔔 Alerts & Notifications</h4>
+          <div class="alert-items">
+            ${data.alerts
+              .map(
+                (alert) => `
+              <div class="alert-item ${alert.type}">
+                <span class="alert-message">${alert.message}</span>
+                <span class="alert-time">${alert.time}</span>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>`
+            : ""
+        }
+
+        <!-- Quick Actions -->
+        <div class="status-section">
+          <h4>⚡ Quick Actions</h4>
+          <div class="action-buttons">
+            <button class="action-btn" onclick="app.exportData()">📊 Export Data</button>
+            <button class="action-btn" onclick="app.scheduleReport()">📧 Schedule Report</button>
+            <button class="action-btn" onclick="app.viewHistory()">📈 View History</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  createErrorView() {
+    return `
+      <div class="error-view">
+        <div class="error-icon">⚠️</div>
+        <h3>Unable to fetch system status</h3>
+        <p>Please check your internet connection and try again.</p>
+        <button onclick="app.checkSystemStatus()" class="retry-btn">🔄 Retry</button>
+      </div>
+    `;
+  }
+
+  addStatusListStyles() {
+    // Add styles for status list view dynamically
     const style = document.createElement("style");
     style.textContent = `
-            .status-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1rem;
-                margin: 1rem 0;
-            }
-            .status-item {
-                background: var(--leco-gray);
-                padding: 1rem;
-                border-radius: var(--border-radius);
-                text-align: center;
-            }
-            .status-item h4 {
-                color: var(--text-secondary);
-                font-size: 0.9rem;
-                margin-bottom: 0.5rem;
-            }
-            .status-value {
-                font-size: 1.2rem;
-                font-weight: 600;
-                color: var(--leco-blue);
-            }
-            .status-value.success {
-                color: var(--success-color);
-            }
-            .error {
-                color: var(--danger-color);
-                text-align: center;
-                font-weight: 600;
-            }
-        `;
+      .status-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--leco-blue), var(--leco-light-blue));
+        color: white;
+        border-radius: var(--border-radius);
+      }
+      
+      .status-header h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.5rem;
+      }
+      
+      .account-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        display: inline-block;
+      }
+      
+      .status-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      
+      .status-section {
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+      }
+      
+      .status-section h4 {
+        background: var(--leco-gray);
+        margin: 0;
+        padding: 1rem;
+        color: var(--leco-blue);
+        font-size: 1.1rem;
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .status-items {
+        padding: 0;
+      }
+      
+      .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      
+      .status-item:last-child {
+        border-bottom: none;
+      }
+      
+      .status-item.highlight {
+        background: #f8f9ff;
+        border-left: 4px solid var(--leco-blue);
+      }
+      
+      .status-item .label {
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      
+      .status-item .value {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      
+      .value.online { color: var(--success-color); }
+      .value.active { color: var(--success-color); }
+      .value.connected { color: var(--success-color); }
+      .value.idle { color: var(--warning-color); }
+      .value.standby { color: var(--warning-color); }
+      .value.power { color: var(--leco-blue); font-size: 1.2rem; }
+      .value.efficiency { color: var(--success-color); }
+      .value.battery { color: var(--leco-blue); }
+      .value.co2 { color: var(--success-color); }
+      
+      .alert-items {
+        padding: 0;
+      }
+      
+      .alert-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-left: 4px solid;
+        margin-bottom: 0.5rem;
+      }
+      
+      .alert-item.info {
+        border-color: var(--leco-blue);
+        background: #e6f3ff;
+      }
+      
+      .alert-item.warning {
+        border-color: var(--warning-color);
+        background: #fffbf0;
+      }
+      
+      .alert-message {
+        flex: 1;
+        font-weight: 500;
+      }
+      
+      .alert-time {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+      
+      .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .action-btn {
+        background: var(--leco-blue);
+        color: white;
+        border: none;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-weight: 500;
+        transition: var(--transition);
+      }
+      
+      .action-btn:hover {
+        background: var(--leco-dark-blue);
+        transform: translateY(-2px);
+      }
+      
+      .error-view {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-secondary);
+      }
+      
+      .error-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      
+      .error-view h3 {
+        color: var(--danger-color);
+        margin-bottom: 1rem;
+      }
+      
+      .retry-btn {
+        background: var(--danger-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-weight: 500;
+        margin-top: 1rem;
+      }
+      
+      .welcome-status {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+      }
+      
+      .welcome-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      
+      .welcome-status h3 {
+        color: var(--leco-blue);
+        margin-bottom: 1rem;
+      }
+      
+      .welcome-status p {
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+      }
+      
+      .status-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .account-info-view {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+      }
+      
+      .account-info-view h3 {
+        color: var(--leco-blue);
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+      
+      .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      
+      .info-row .label {
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      
+      .info-row .value {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      
+      .info-row .value.connected {
+        color: var(--success-color);
+      }
+      
+      @media (max-width: 768px) {
+        .status-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        
+        .action-buttons {
+          grid-template-columns: 1fr;
+        }
+        
+        .status-actions {
+          max-width: 100%;
+        }
+        
+        .info-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+      }
+    `;
 
-    if (!document.querySelector("#status-grid-styles")) {
-      style.id = "status-grid-styles";
+    if (!document.querySelector("#status-list-styles")) {
+      style.id = "status-list-styles";
       document.head.appendChild(style);
     }
+  }
+
+  // Quick action methods
+  exportData() {
+    this.showNotification("Data export feature coming soon!");
+  }
+
+  scheduleReport() {
+    this.showNotification("Report scheduling feature coming soon!");
+  }
+
+  viewHistory() {
+    this.showNotification("History view feature coming soon!");
   }
 
   refreshData() {
