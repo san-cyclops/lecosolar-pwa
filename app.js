@@ -239,11 +239,31 @@ class LecoSolarApp {
         const accountInput = doc.getElementById("INP_9ldt42okh");
 
         if (accountInput) {
+          // Fill the account number
           accountInput.value = this.accountNumber;
           accountInput.dispatchEvent(new Event("input", { bubbles: true }));
-          accountInput.focus();
+          accountInput.dispatchEvent(new Event("change", { bubbles: true }));
 
-          this.showNotification("Account number auto-filled!");
+          // Wait a moment, then try to click the login button
+          setTimeout(() => {
+            // Find the login button by its classes and text
+            const loginButton =
+              doc.querySelector('button[type="submit"]') ||
+              doc.querySelector("button.bg-yellow-500") ||
+              doc.querySelector('button:contains("Login")') ||
+              Array.from(doc.querySelectorAll("button")).find((btn) =>
+                btn.textContent.toLowerCase().includes("login")
+              );
+
+            if (this.findAndClickLoginButton(doc)) {
+              this.showNotification("Account filled and login clicked!");
+            } else {
+              accountInput.focus();
+              this.showNotification(
+                "Account number auto-filled - Please click Login button manually"
+              );
+            }
+          }, 500);
         }
       } catch (error) {
         // Cross-origin restriction - this is expected
@@ -269,6 +289,8 @@ class LecoSolarApp {
   }
 
   monitorEmbeddedLogin(iframe) {
+    let hasFilledAndClicked = false;
+
     // Try to access iframe content periodically
     const checkInterval = setInterval(() => {
       try {
@@ -277,8 +299,20 @@ class LecoSolarApp {
         const accountInput = iframeDoc.getElementById("INP_9ldt42okh");
 
         if (accountInput && accountInput.value !== this.accountNumber) {
+          // Fill the account number
           accountInput.value = this.accountNumber;
           accountInput.dispatchEvent(new Event("input", { bubbles: true }));
+          accountInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+          // Auto-click login button if we haven't already
+          if (!hasFilledAndClicked) {
+            setTimeout(() => {
+              if (this.findAndClickLoginButton(iframeDoc)) {
+                hasFilledAndClicked = true;
+                this.showNotification("Auto-login attempted in embedded view");
+              }
+            }, 500);
+          }
         }
 
         // Check if login is successful by looking for specific elements
@@ -666,6 +700,48 @@ class LecoSolarApp {
       window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true
     );
+  }
+
+  // Helper function to find and click login button
+  findAndClickLoginButton(doc) {
+    // Multiple strategies to find the login button
+    const selectors = [
+      'button[type="submit"]',
+      "button.bg-yellow-500",
+      "button.hover\\:bg-yellow-600",
+      'input[type="submit"]',
+      'button:contains("Login")',
+      'button:contains("login")',
+      'button:contains("Sign in")',
+      'button:contains("Submit")',
+    ];
+
+    for (const selector of selectors) {
+      try {
+        const button = doc.querySelector(selector);
+        if (button && button.offsetParent !== null) {
+          // Check if button is visible
+          button.click();
+          return true;
+        }
+      } catch (e) {
+        // Continue to next selector
+      }
+    }
+
+    // Fallback: find buttons by text content
+    const buttons = Array.from(
+      doc.querySelectorAll('button, input[type="submit"]')
+    );
+    for (const button of buttons) {
+      const text = button.textContent || button.value || "";
+      if (text.toLowerCase().match(/login|sign\s*in|submit|enter/)) {
+        button.click();
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // Utility function for delays
