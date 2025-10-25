@@ -136,32 +136,221 @@ class LecoSolarApp {
     this.updateStatus("Connecting to LECO Solar...", "connecting");
 
     try {
-      // Simulate connection to LECO Solar system
-      await this.delay(1500);
-
-      // Store successful session
-      localStorage.setItem(
-        "lecoSolarSession",
-        JSON.stringify({
-          accountNumber: this.accountNumber,
-          loginTime: Date.now(),
-          isLoggedIn: true,
-        })
-      );
-
-      this.updateStatus("Connected to LECO Solar", "online");
-      this.updateLastUpdated();
-      this.showNotification(`Connected with account ${this.accountNumber}`);
-
-      // Show initial status check options
-      this.showStatusOptions();
-
-      // Auto-check status after a short delay
-      setTimeout(() => this.checkSystemStatus(), 2000);
+      // Show the LECO login interface with status tracking
+      this.showLecoLoginInterface();
     } catch (error) {
       console.error("Auto-login failed:", error);
       this.updateStatus("Connection failed", "offline");
       this.showNotification("Connection failed - Please try again", "error");
+    }
+  }
+
+  showLecoLoginInterface() {
+    const statusContent = document.getElementById("status-content");
+    if (statusContent) {
+      statusContent.innerHTML = `
+        <div class="leco-login-interface">
+          <div class="login-header">
+            <h3>🔐 LECO Solar Login Process</h3>
+            <p>Account: <strong>${this.accountNumber}</strong></p>
+          </div>
+          
+          <div class="login-status-tracker">
+            <div class="status-step" id="step-1">
+              <div class="step-icon">1️⃣</div>
+              <div class="step-content">
+                <h4>Opening LECO Website</h4>
+                <p id="step-1-status">Ready to start...</p>
+              </div>
+            </div>
+            
+            <div class="status-step" id="step-2">
+              <div class="step-icon">2️⃣</div>
+              <div class="step-content">
+                <h4>Finding Account Input Field</h4>
+                <p id="step-2-status">Waiting...</p>
+              </div>
+            </div>
+            
+            <div class="status-step" id="step-3">
+              <div class="step-icon">3️⃣</div>
+              <div class="step-content">
+                <h4>Entering Account Number</h4>
+                <p id="step-3-status">Waiting...</p>
+              </div>
+            </div>
+            
+            <div class="status-step" id="step-4">
+              <div class="step-icon">4️⃣</div>
+              <div class="step-content">
+                <h4>Finding Login Button</h4>
+                <p id="step-4-status">Waiting...</p>
+              </div>
+            </div>
+            
+            <div class="status-step" id="step-5">
+              <div class="step-icon">5️⃣</div>
+              <div class="step-content">
+                <h4>Clicking Login Button</h4>
+                <p id="step-5-status">Waiting...</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="login-actions">
+            <button onclick="app.startLecoLogin()" class="action-button primary" id="start-login-btn">
+              🚀 Start Auto-Login Process
+            </button>
+            <button onclick="app.openLecoManually()" class="action-button secondary">
+              🌐 Open LECO Website Manually
+            </button>
+          </div>
+          
+          <div class="login-log" id="login-log">
+            <h4>📋 Process Log:</h4>
+            <div class="log-content" id="log-content">
+              <p class="log-entry">Ready to start LECO login process...</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    this.addLoginInterfaceStyles();
+  }
+
+  async startLecoLogin() {
+    const startBtn = document.getElementById("start-login-btn");
+    startBtn.disabled = true;
+    startBtn.textContent = "⏳ Processing...";
+
+    this.logMessage("🚀 Starting auto-login process...");
+    this.updateStepStatus(1, "Opening LECO website...", "processing");
+
+    try {
+      // Step 1: Open LECO website
+      const newWindow = window.open(
+        this.loginUrl,
+        "_blank",
+        "width=1024,height=768,scrollbars=yes,resizable=yes"
+      );
+
+      if (!newWindow) {
+        throw new Error("Popup blocked - please allow popups for this site");
+      }
+
+      this.updateStepStatus(1, "Website opened successfully ✅", "success");
+      this.logMessage("✅ LECO website opened in new tab");
+
+      // Step 2: Wait for page to load and find input field
+      this.updateStepStatus(2, "Waiting for page to load...", "processing");
+
+      setTimeout(() => {
+        this.attemptAutoFillWithStatusTracking(newWindow);
+      }, 3000);
+    } catch (error) {
+      this.updateStepStatus(1, `Failed: ${error.message} ❌`, "error");
+      this.logMessage(`❌ Error: ${error.message}`);
+      startBtn.disabled = false;
+      startBtn.textContent = "🚀 Start Auto-Login Process";
+    }
+  }
+
+  async attemptAutoFillWithStatusTracking(targetWindow) {
+    try {
+      this.logMessage("🔍 Attempting to access LECO website content...");
+
+      // Try to access the document
+      const doc = targetWindow.document;
+      const accountInput = doc.getElementById("INP_9ldt42okh");
+
+      if (accountInput) {
+        // Step 2: Success - found input field
+        this.updateStepStatus(2, "Account input field found ✅", "success");
+        this.logMessage("✅ Account input field (INP_9ldt42okh) located");
+
+        // Step 3: Enter account number
+        this.updateStepStatus(3, "Entering account number...", "processing");
+        accountInput.value = this.accountNumber;
+        accountInput.dispatchEvent(new Event("input", { bubbles: true }));
+        accountInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+        this.updateStepStatus(
+          3,
+          `Account number ${this.accountNumber} entered ✅`,
+          "success"
+        );
+        this.logMessage(
+          `✅ Account number ${this.accountNumber} entered successfully`
+        );
+
+        // Step 4: Find login button
+        this.updateStepStatus(4, "Searching for login button...", "processing");
+
+        setTimeout(() => {
+          if (this.findAndClickLoginButtonWithStatus(doc)) {
+            this.updateStepStatus(
+              5,
+              "Login button clicked successfully ✅",
+              "success"
+            );
+            this.logMessage(
+              "✅ Login button clicked - Please complete any additional steps in the opened window"
+            );
+            this.showNotification(
+              "Auto-login process completed! Check the LECO website tab."
+            );
+
+            // Monitor for successful login
+            this.startLoginMonitoring(targetWindow);
+          } else {
+            this.updateStepStatus(4, "Login button not found ❌", "error");
+            this.updateStepStatus(5, "Manual click required ⚠️", "warning");
+            this.logMessage(
+              "⚠️ Login button not found - please click manually in the opened window"
+            );
+            this.showNotification(
+              "Please click the Login button manually in the LECO website tab"
+            );
+          }
+        }, 1000);
+      } else {
+        this.updateStepStatus(2, "Account input field not found ❌", "error");
+        this.logMessage(
+          "❌ Account input field (INP_9ldt42okh) not found - page may not be fully loaded"
+        );
+        this.updateStepStatus(3, "Skipped - input field not found", "error");
+        this.updateStepStatus(4, "Skipped - input field not found", "error");
+        this.updateStepStatus(
+          5,
+          "Please enter account number manually: " + this.accountNumber,
+          "warning"
+        );
+      }
+    } catch (crossOriginError) {
+      // Expected CORS error
+      this.updateStepStatus(2, "CORS restriction detected ⚠️", "warning");
+      this.logMessage(
+        "⚠️ Cannot access LECO website content due to security restrictions"
+      );
+      this.updateStepStatus(3, "Manual entry required", "warning");
+      this.updateStepStatus(4, "Manual search required", "warning");
+      this.updateStepStatus(
+        5,
+        `Please enter account: ${this.accountNumber} and click Login manually`,
+        "warning"
+      );
+
+      this.showNotification(
+        `Please manually enter account ${this.accountNumber} and click Login in the opened tab`
+      );
+    }
+
+    // Re-enable the start button
+    const startBtn = document.getElementById("start-login-btn");
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = "🔄 Retry Auto-Login";
     }
   }
 
@@ -1023,6 +1212,163 @@ class LecoSolarApp {
     }
   }
 
+  addLoginInterfaceStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
+      .leco-login-interface {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+      }
+      
+      .login-header {
+        background: linear-gradient(135deg, var(--leco-blue), var(--leco-light-blue));
+        color: white;
+        padding: 2rem;
+        text-align: center;
+      }
+      
+      .login-header h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.5rem;
+      }
+      
+      .login-status-tracker {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .status-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        background: #f8f9fa;
+        border-left: 4px solid #e9ecef;
+        transition: var(--transition);
+      }
+      
+      .status-step.processing {
+        border-left-color: var(--leco-blue);
+        background: #e6f3ff;
+        animation: pulse 2s infinite;
+      }
+      
+      .status-step.success {
+        border-left-color: var(--success-color);
+        background: #f0fff4;
+      }
+      
+      .status-step.error {
+        border-left-color: var(--danger-color);
+        background: #fff5f5;
+      }
+      
+      .status-step.warning {
+        border-left-color: var(--warning-color);
+        background: #fffbf0;
+      }
+      
+      .step-icon {
+        font-size: 1.5rem;
+        min-width: 2rem;
+      }
+      
+      .step-content h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--leco-blue);
+        font-size: 1rem;
+      }
+      
+      .step-content p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+      
+      .login-actions {
+        padding: 1rem 2rem;
+        display: flex;
+        gap: 1rem;
+        border-top: 1px solid #e9ecef;
+      }
+      
+      .login-actions .action-button {
+        flex: 1;
+      }
+      
+      .login-log {
+        padding: 2rem;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+      }
+      
+      .login-log h4 {
+        margin: 0 0 1rem 0;
+        color: var(--leco-blue);
+      }
+      
+      .log-content {
+        background: #000;
+        color: #00ff00;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        max-height: 200px;
+        overflow-y: auto;
+        line-height: 1.4;
+      }
+      
+      .log-entry {
+        margin: 0 0 0.5rem 0;
+      }
+      
+      .log-time {
+        color: #888;
+        font-size: 0.8rem;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      
+      @media (max-width: 768px) {
+        .login-header {
+          padding: 1.5rem;
+        }
+        
+        .login-status-tracker {
+          padding: 1rem;
+        }
+        
+        .login-actions {
+          flex-direction: column;
+          padding: 1rem;
+        }
+        
+        .status-step {
+          padding: 0.75rem;
+        }
+        
+        .step-icon {
+          font-size: 1.25rem;
+          min-width: 1.5rem;
+        }
+      }
+    `;
+
+    if (!document.querySelector("#login-interface-styles")) {
+      style.id = "login-interface-styles";
+      document.head.appendChild(style);
+    }
+  }
+
   // Quick action methods
   exportData() {
     this.showNotification("Data export feature coming soon!");
@@ -1208,6 +1554,156 @@ class LecoSolarApp {
     return (
       window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true
+    );
+  }
+
+  updateStepStatus(stepNumber, message, status) {
+    const stepElement = document.getElementById(`step-${stepNumber}`);
+    const statusElement = document.getElementById(`step-${stepNumber}-status`);
+
+    if (stepElement && statusElement) {
+      statusElement.textContent = message;
+
+      // Remove existing status classes
+      stepElement.classList.remove("processing", "success", "error", "warning");
+
+      // Add new status class
+      if (status) {
+        stepElement.classList.add(status);
+      }
+    }
+  }
+
+  logMessage(message) {
+    const logContent = document.getElementById("log-content");
+    if (logContent) {
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement("p");
+      logEntry.className = "log-entry";
+      logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> ${message}`;
+      logContent.appendChild(logEntry);
+
+      // Scroll to bottom
+      logContent.scrollTop = logContent.scrollHeight;
+    }
+  }
+
+  findAndClickLoginButtonWithStatus(doc) {
+    this.logMessage("🔍 Searching for login button...");
+
+    const selectors = [
+      'button[type="submit"]',
+      "button.bg-yellow-500",
+      "button.hover\\:bg-yellow-600",
+      'input[type="submit"]',
+    ];
+
+    for (const selector of selectors) {
+      try {
+        const button = doc.querySelector(selector);
+        if (button && button.offsetParent !== null) {
+          this.logMessage(`✅ Found login button using selector: ${selector}`);
+          button.click();
+          this.logMessage("🎯 Login button clicked successfully");
+          return true;
+        }
+      } catch (e) {
+        this.logMessage(`⚠️ Selector failed: ${selector}`);
+      }
+    }
+
+    // Fallback: find buttons by text content
+    this.logMessage("🔍 Searching by button text content...");
+    const buttons = Array.from(
+      doc.querySelectorAll('button, input[type="submit"]')
+    );
+    for (const button of buttons) {
+      const text = button.textContent || button.value || "";
+      if (text.toLowerCase().match(/login|sign\s*in|submit|enter/)) {
+        this.logMessage(`✅ Found login button by text: "${text}"`);
+        button.click();
+        this.logMessage("🎯 Login button clicked successfully");
+        return true;
+      }
+    }
+
+    this.logMessage("❌ No login button found with any method");
+    return false;
+  }
+
+  startLoginMonitoring(targetWindow) {
+    this.logMessage("👀 Monitoring for successful login...");
+
+    let checkCount = 0;
+    const maxChecks = 30; // Check for 30 seconds
+
+    const monitor = setInterval(() => {
+      checkCount++;
+
+      try {
+        const doc = targetWindow.document;
+
+        // Look for signs of successful login
+        const dashboardElements = doc.querySelectorAll(
+          '[class*="dashboard"], [class*="home"], [id*="dashboard"], [id*="main"]'
+        );
+        const statusElements = doc.querySelectorAll(
+          '[class*="status"], [id*="status"]'
+        );
+
+        if (dashboardElements.length > 0 || statusElements.length > 0) {
+          clearInterval(monitor);
+          this.logMessage(
+            "🎉 Login appears successful - dashboard elements detected"
+          );
+          this.showNotification(
+            "Login successful! Solar system data should now be available."
+          );
+
+          // Store successful login
+          localStorage.setItem(
+            "lecoSolarSession",
+            JSON.stringify({
+              accountNumber: this.accountNumber,
+              loginTime: Date.now(),
+              isLoggedIn: true,
+            })
+          );
+
+          this.updateStatus("Login successful", "online");
+          return;
+        }
+
+        // Check if window still exists
+        if (targetWindow.closed) {
+          clearInterval(monitor);
+          this.logMessage("ℹ️ LECO website window was closed");
+          return;
+        }
+      } catch (error) {
+        // CORS restrictions - continue monitoring
+      }
+
+      if (checkCount >= maxChecks) {
+        clearInterval(monitor);
+        this.logMessage(
+          "⏰ Login monitoring timeout - please check the LECO website manually"
+        );
+      }
+    }, 1000);
+  }
+
+  openLecoManually() {
+    this.logMessage("🌐 Opening LECO website manually...");
+    const url = `${this.loginUrl}`;
+    window.open(
+      url,
+      "_blank",
+      "width=1024,height=768,scrollbars=yes,resizable=yes"
+    );
+    this.showNotification(`Please enter account number: ${this.accountNumber}`);
+    this.logMessage(
+      `ℹ️ Please enter account number: ${this.accountNumber} and login manually`
     );
   }
 
