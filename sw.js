@@ -1,22 +1,27 @@
 // LecoSolar PWA Service Worker
-const CACHE_NAME = "lecosolar-v1.0.0";
+const CACHE_NAME = "lecosolar-v1.0.1";
+
+// Detect if we're on GitHub Pages
+const isGitHubPages = location.hostname === 'san-cyclops.github.io';
+const basePath = isGitHubPages ? '/lecosolar-pwa' : '';
+
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/manifest.json",
-  "/icons/icon-72x72.png",
-  "/icons/icon-96x96.png",
-  "/icons/icon-128x128.png",
-  "/icons/icon-144x144.png",
-  "/icons/icon-152x152.png",
-  "/icons/icon-192x192.png",
-  "/icons/icon-384x384.png",
-  "/icons/icon-512x512.png",
-  "/icons/leco-logo.png",
-  "/icons/favicon-16x16.png",
-  "/icons/favicon-32x32.png",
+  `${basePath}/`,
+  `${basePath}/index.html`,
+  `${basePath}/styles.css`,
+  `${basePath}/app.js`,
+  `${basePath}/manifest.json`,
+  `${basePath}/icons/icon-72x72.png`,
+  `${basePath}/icons/icon-96x96.png`,
+  `${basePath}/icons/icon-128x128.png`,
+  `${basePath}/icons/icon-144x144.png`,
+  `${basePath}/icons/icon-152x152.png`,
+  `${basePath}/icons/icon-192x192.png`,
+  `${basePath}/icons/icon-384x384.png`,
+  `${basePath}/icons/icon-512x512.png`,
+  `${basePath}/icons/leco-logo.png`,
+  `${basePath}/icons/favicon-16x16.png`,
+  `${basePath}/icons/favicon-32x32.png`,
 ];
 
 // Install event - cache resources
