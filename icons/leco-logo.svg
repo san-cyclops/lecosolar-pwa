@@ -1,0 +1,30 @@
+<!-- Placeholder LECO Logo SVG -->
+<svg width="200" height="80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lecoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0066cc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4da6ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="80" fill="white" stroke="#0066cc" stroke-width="2" rx="5"/>
+  
+  <!-- LECO Text -->
+  <text x="100" y="35" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="24" font-weight="bold" fill="url(#lecoGradient)">LECO</text>
+  
+  <!-- Solar subtitle -->
+  <text x="100" y="55" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="12" fill="#666666">Solar Monitoring</text>
+  
+  <!-- Solar icon -->
+  <circle cx="30" cy="40" r="12" fill="#ffd700" stroke="#ff8c00" stroke-width="2"/>
+  <path d="M30 28 L30 22 M42 40 L48 40 M30 52 L30 58 M18 40 L12 40 
+           M38.5 31.5 L42.5 27.5 M38.5 48.5 L42.5 52.5 M21.5 31.5 L17.5 27.5 
+           M21.5 48.5 L17.5 52.5" stroke="#ff8c00" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Power/Lightning bolt -->
+  <path d="M170 25 L160 40 L168 40 L165 55 L175 40 L167 40 L170 25" 
+        fill="#0066cc" stroke="none"/>
+</svg>

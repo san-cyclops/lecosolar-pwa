@@ -1,0 +1,36 @@
+<!-- Create a simple PNG version of the logo for better compatibility -->
+<!-- This is a placeholder - you should replace with actual LECO logo -->
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0066cc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4da6ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="96" cy="96" r="90" fill="url(#iconGradient)"/>
+  
+  <!-- Inner white circle -->
+  <circle cx="96" cy="96" r="75" fill="white"/>
+  
+  <!-- Solar panel representation -->
+  <rect x="40" y="70" width="112" height="52" fill="#0066cc" rx="4"/>
+  <rect x="44" y="74" width="104" height="44" fill="#e6f2ff" rx="2"/>
+  
+  <!-- Grid lines for solar panel -->
+  <line x1="96" y1="74" x2="96" y2="118" stroke="#0066cc" stroke-width="1"/>
+  <line x1="44" y1="96" x2="148" y2="96" stroke="#0066cc" stroke-width="1"/>
+  <line x1="70" y1="74" x2="70" y2="118" stroke="#0066cc" stroke-width="0.5"/>
+  <line x1="122" y1="74" x2="122" y2="118" stroke="#0066cc" stroke-width="0.5"/>
+  
+  <!-- Sun symbol -->
+  <circle cx="96" cy="45" r="8" fill="#ffd700"/>
+  <path d="M96 29 L96 25 M110 45 L114 45 M96 61 L96 65 M82 45 L78 45 
+           M106 35 L109 32 M106 55 L109 58 M86 35 L83 32 M86 55 L83 58" 
+        stroke="#ffd700" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- LECO text -->
+  <text x="96" y="145" text-anchor="middle" font-family="Arial, sans-serif" 
+        font-size="18" font-weight="bold" fill="#0066cc">LECO</text>
+</svg>

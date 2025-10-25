@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0066cc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="LecoSolar">
+
+    <title>LecoSolar - Solar Monitoring</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="icons/favicon-16x16.png" sizes="16x16">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <img src="icons/leco-logo.png" alt="LECO Logo" class="loading-logo">
+            <div class="loading-spinner"></div>
+            <p>Loading LecoSolar...</p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <img src="icons/leco-logo.png" alt="LECO Logo" class="header-logo">
+            <h1>LecoSolar</h1>
+            <button id="menu-btn" class="menu-button">☰</button>
+        </header>
+
+        <!-- Navigation Menu -->
+        <nav id="nav-menu" class="nav-menu">
+            <ul>
+                <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                <li><a href="#status" class="nav-link">System Status</a></li>
+                <li><a href="#account" class="nav-link">Account Info</a></li>
+                <li><a href="#settings" class="nav-link">Settings</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="welcome-card">
+                    <h2>Welcome to LecoSolar</h2>
+                    <p>Account: <strong>0405622811</strong></p>
+                    <div class="status-indicator">
+                        <span id="connection-status" class="status-dot"></span>
+                        <span id="status-text">Checking connection...</span>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button id="check-status-btn" class="action-button primary">
+                        <span class="button-icon">🔄</span>
+                        Check Status
+                    </button>
+                    <button id="refresh-data-btn" class="action-button secondary">
+                        <span class="button-icon">📊</span>
+                        Refresh Data
+                    </button>
+                </div>
+
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h3>System Status</h3>
+                        <p id="system-status">Checking...</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Last Updated</h3>
+                        <p id="last-updated">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Status Section -->
+            <section id="status-section" class="content-section">
+                <h2>System Status Details</h2>
+                <div class="status-details">
+                    <div id="status-content" class="status-content">
+                        <p>Click "Check Status" to fetch the latest information from LECO Solar system.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Account Section -->
+            <section id="account-section" class="content-section">
+                <h2>Account Information</h2>
+                <div class="account-info">
+                    <div class="info-row">
+                        <label>Account Number:</label>
+                        <span>0405622811</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Service URL:</label>
+                        <span>https://solar.leco.lk/login</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Auto Login:</label>
+                        <span class="status-enabled">Enabled</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="content-section">
+                <h2>Settings</h2>
+                <div class="settings-options">
+                    <div class="setting-item">
+                        <label for="auto-refresh">Auto Refresh</label>
+                        <input type="checkbox" id="auto-refresh" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label for="notifications">Notifications</label>
+                        <input type="checkbox" id="notifications" checked>
+                    </div>
+                    <div class="setting-item">
+                        <button id="install-app-btn" class="install-button">Install App</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2025 Lanka Electricity Company (LECO)</p>
+        </footer>
+    </div>
+
+    <!-- Install Prompt -->
+    <div id="install-prompt" class="install-prompt" style="display: none;">
+        <div class="prompt-content">
+            <h3>Install LecoSolar</h3>
+            <p>Add this app to your home screen for easy access!</p>
+            <div class="prompt-actions">
+                <button id="install-yes">Install</button>
+                <button id="install-no">Not Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>

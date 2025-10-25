@@ -1,0 +1,627 @@
+/* LecoSolar PWA Styles */
+
+/* CSS Variables for LECO Branding */
+:root {
+  --leco-blue: #0066cc;
+  --leco-light-blue: #4da6ff;
+  --leco-dark-blue: #004080;
+  --leco-gray: #f5f5f5;
+  --leco-dark-gray: #333333;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, var(--leco-light-blue), var(--leco-blue));
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--leco-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: var(--transition);
+}
+
+.loading-content {
+  text-align: center;
+  color: white;
+}
+
+.loading-logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* App Container */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+/* Header */
+.app-header {
+  background: var(--leco-blue);
+  color: white;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--box-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-logo {
+  width: 40px;
+  height: auto;
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.menu-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Navigation Menu */
+.nav-menu {
+  background: white;
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease;
+}
+
+.nav-menu.active {
+  max-height: 300px;
+}
+
+.nav-menu ul {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-menu li {
+  border-bottom: 1px solid var(--leco-gray);
+}
+
+.nav-link {
+  display: block;
+  padding: 1rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background: var(--leco-blue);
+  color: white;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.content-section {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.content-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Welcome Card */
+.welcome-card {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.welcome-card h2 {
+  color: var(--leco-blue);
+  margin-bottom: 1rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--warning-color);
+  animation: pulse 2s infinite;
+}
+
+.status-dot.online {
+  background: var(--success-color);
+}
+
+.status-dot.offline {
+  background: var(--danger-color);
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.action-button {
+  padding: 1rem;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  box-shadow: var(--box-shadow);
+}
+
+.action-button.primary {
+  background: var(--leco-blue);
+  color: white;
+}
+
+.action-button.secondary {
+  background: white;
+  color: var(--leco-blue);
+  border: 2px solid var(--leco-blue);
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.button-icon {
+  font-size: 1.2rem;
+}
+
+/* Info Cards */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+}
+
+.info-card h3 {
+  color: var(--leco-blue);
+  margin-bottom: 0.5rem;
+}
+
+/* Status Details */
+.status-details {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+.status-content {
+  padding: 2rem;
+}
+
+/* Account Info */
+.account-info {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--leco-gray);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.status-enabled {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+/* Settings */
+.settings-options {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--leco-gray);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.install-button {
+  background: var(--leco-blue);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.install-button:hover {
+  background: var(--leco-dark-blue);
+}
+
+/* Footer */
+.app-footer {
+  background: var(--leco-dark-gray);
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: auto;
+}
+
+/* Install Prompt */
+.install-prompt {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  z-index: 1000;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.prompt-content {
+  padding: 1.5rem;
+}
+
+.prompt-content h3 {
+  color: var(--leco-blue);
+  margin-bottom: 0.5rem;
+}
+
+.prompt-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.prompt-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.prompt-actions button:first-child {
+  background: var(--leco-blue);
+  color: white;
+}
+
+.prompt-actions button:last-child {
+  background: var(--leco-gray);
+  color: var(--text-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0.5rem;
+  }
+
+  .welcome-card {
+    padding: 1.5rem;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* iOS Safari Specific Styles */
+@supports (-webkit-touch-callout: none) {
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-container {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .info-card,
+  .welcome-card,
+  .status-details,
+  .account-info,
+  .settings-options {
+    background: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .nav-menu {
+    background: #1a1a1a;
+  }
+
+  .nav-link {
+    color: #ffffff;
+  }
+
+  .info-row {
+    border-bottom-color: #333333;
+  }
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  position: relative;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #ccc;
+  border-top-color: var(--leco-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* LECO Login Section Styles */
+.leco-login-section {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+}
+
+.leco-login-section h3 {
+  color: var(--leco-blue);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.leco-login-section p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.login-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.login-options .action-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.manual-instructions {
+  background: var(--leco-gray);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.manual-instructions h4 {
+  color: var(--leco-blue);
+  margin-bottom: 1rem;
+}
+
+.manual-instructions ol {
+  padding-left: 1.5rem;
+}
+
+.manual-instructions li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.manual-instructions code {
+  background: var(--leco-blue);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+#leco-embed-container {
+  margin: 2rem 0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+#leco-iframe {
+  border: none;
+  width: 100%;
+  height: 600px;
+  border-radius: var(--border-radius);
+}
+
+/* Responsive adjustments for login section */
+@media (max-width: 768px) {
+  .leco-login-section {
+    padding: 1rem;
+  }
+
+  .login-options {
+    gap: 0.5rem;
+  }
+
+  .login-options .action-button {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  #leco-iframe {
+    height: 500px;
+  }
+}
