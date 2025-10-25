@@ -2,8 +2,8 @@
 const CACHE_NAME = "lecosolar-v1.0.1";
 
 // Detect if we're on GitHub Pages
-const isGitHubPages = location.hostname === 'san-cyclops.github.io';
-const basePath = isGitHubPages ? '/lecosolar-pwa' : '';
+const isGitHubPages = location.hostname === "san-cyclops.github.io";
+const basePath = isGitHubPages ? "/lecosolar-pwa" : "";
 
 const urlsToCache = [
   `${basePath}/`,
